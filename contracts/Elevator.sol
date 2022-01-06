@@ -1,39 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface Building {
-  function isLastFloor(uint256) external returns (bool);
-}
+contract Privacy {
+  bool public locked = true;
+  uint256 public ID = block.timestamp;
+  uint8 private flattening = 10;
+  uint8 private denomination = 255;
+  uint16 private awkwardness = uint16(block.timestamp);
+  bytes32[3] private data;
 
-contract Elevator {
-  bool public top;
-  uint256 public floor;
-
-  function goTo(uint256 _floor) public {
-    Building building = Building(msg.sender);
-
-    if (!building.isLastFloor(_floor)) {
-      floor = _floor;
-      top = building.isLastFloor(floor);
-    }
-  }
-}
-
-contract WorkBuilding is Building {
-  uint256 public lastFloor = 10;
-  uint256 public coef = 0;
-
-  function goToLastFloor(Elevator _elevator) public {
-    _elevator.goTo(lastFloor - 1);
+  constructor(bytes32[3] memory _data) {
+    data = _data;
   }
 
-  function isLastFloor(uint256 _floor) external override returns (bool) {
-    uint256 floor = _floor + coef;
-    coef += 1;
+  function unlock(bytes16 _key) public {
+    require(_key == bytes16(data[2]));
+    locked = false;
+  }
 
-    if (floor == lastFloor) {
-      return true;
-    }
-    return false;
+  /*
+    A bunch of super advanced solidity algorithms...
+
+      ,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`
+      .,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,
+      *.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^         ,---/V\
+      `*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.    ~|__(o.o)
+      ^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'^`*.,*'  UU  UU
+  */
+}
+
+contract UnlockContract {
+  constructor(Privacy _privacy, bytes32 _key) {
+    bytes16 key = bytes16(_key);
+    _privacy.unlock(key);
   }
 }

